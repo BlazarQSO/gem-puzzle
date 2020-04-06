@@ -1,1 +1,167 @@
+body {
+    padding: 0;
+    margin: 0;
+    background-color: beige;
+}
 
+.wrap {
+    width: 80%;
+    height: 450px;
+    margin: 0 auto;
+    border: 3px solid #556677;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.game {
+    width: 400px;
+    height: 400px;
+    display: flex;
+    border: 2px solid #927e14;
+    flex-wrap: wrap;
+    box-shadow: black 10px 11px 2px;
+    position: relative;
+}
+
+.nav {
+    display: flex;
+    justify-content: center;
+    width: 80%;
+    height: 70px;
+    margin: 0 auto;
+    border: 3px solid #556677;
+    align-items: center;
+}
+
+.status {
+    display: flex;
+    justify-content: center;
+    width: 80%;
+    margin: 0 auto;
+    border: 3px solid #556677;
+    align-items: center;
+    height: 70px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.my-select, .item, .my-button {
+    color: black;
+    text-shadow: 1px 1px 1px white;
+    position: relative;
+    width: 90px;
+    height: 50px;
+    font-size: 22px;
+    font-family: 'Times New Roman', Times, serif;
+    margin-bottom: 5px;
+    margin-left: 9px;
+    border: 2px solid #927e14;
+    box-shadow: black 5px 6px 2px;
+    border-radius: 5px;
+    outline: none;
+    text-decoration-line: none;
+    text-decoration: none;
+    user-select: none;
+    padding: 0px;
+    cursor: pointer;
+    background-image: -moz-linear-gradient(top, rgb(90, 78, 10) 0%, #D9CF73 50%, #8F7800 100%);
+    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #FFD700), color-stop(50, #D9CF73), color-stop(100, #8F7800));
+    background-image: -webkit-linear-gradient(top, rgb(90, 78, 10) 0%, #D9CF73 50%, #8F7800 100%);
+    transition: color 0.3s, background-color 0.3s, box-shadow 0.3s;
+}
+
+.item:hover, .my-button:hover {
+    background-image: none;
+    background-color: burlywood;
+    color: blue;
+    box-shadow: black 3px 4px 2px;
+    outline: none;
+    text-decoration-line: none;
+    text-decoration: none;
+}
+
+.item:active, .my-button:active {
+    background-color: crimson;
+    color: black;
+    box-shadow: 1px 1px 2px black;
+    outline: none;
+    text-decoration-line: none;
+    text-decoration: none;
+}
+
+.item {
+    width: 80px;
+    height: 80px;
+    margin-left: 10px;
+    margin-top: 5px;
+    margin-bottom: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.game .item:nth-child(1) {
+    position: absolute;
+    left: 190px;
+    top: 300px;
+}
+
+.item span {
+    font-size: 50px;
+}
+
+/*-------------DropDownMenu----------------*/
+
+.my-select:hover {
+    color: black;
+    background: #c8c4c4;
+    font-weight: bold;
+    outline: none;
+}
+
+.my-select::selection {
+    font-size: 20px;
+    outline: none;
+}
+
+/*-------------DropDownMenu End----------------*/
+
+.title {
+    font-size: 44px;
+    color: #e0dfdc;
+    background: #556677;
+    letter-spacing: .1em;
+    text-shadow: 0 -1px 0 #fff, 0 1px 0 #2e2e2e, 0 2px 0 #2c2c2c, 0 3px 0 #2a2a2a, 0 4px 0 #282828, 0 5px 0 #262626, 0 6px 0 #242424, 0 7px 0 #222, 0 8px 0 #202020, 0 9px 0 #1e1e1e, 0 10px 0 #1c1c1c, 0 11px 0 #1a1a1a, 0 12px 0 #181818, 0 13px 0 #161616, 0 14px 0 #141414, 0 15px 0 #121212, 0 22px 30px rgba(0, 0, 0, 0.9);
+    text-align: center;
+    margin-top: 0px;
+    margin: 0;
+    margin-bottom: 10px;
+    padding: 0;
+    height: 60px;
+}
+
+/*-----------------------myTitleLove-------------------------*/
+
+.time {
+    color: #A7DD3C;
+    background: none;
+    text-shadow: 2px 0 0px #800040, 3px 2px 0px rgba(77, 0, 38, 0.5), 3px 0 3px #FF002B, 5px 0 3px #800015, 6px 2px 3px rgba(77, 0, 13, 0.5), 6px 0 9px #FF5500, 8px 0 9px #802A00, 9px 2px 9px rgba(77, 25, 0, 0.5), 9px 0 18px #FFD500, 11px 0 18px #806A00, 12px 2px 18px rgba(77, 66, 0, 0.5), 12px 0 30px #D4FF00, 14px 0 30px #6A8000, 15px 2px 30px rgba(64, 77, 0, 0.5), 15px 0 45px #80FF00, 17px 0 45px #408000, 17px 2px 45px rgba(38, 77, 0, 0.5);
+    text-align: center;
+    font-size: 32px;
+    height: 30px;
+    margin-left: 30px;
+    margin-right: 30px;
+}
+
+/*---------------------myTitleComic---------------------*/
+
+.label {
+    font-size: 40px;
+    color: #bc2e1e;
+    background: none;
+    text-shadow: 0 1px 0px #378ab4, 1px 0 0px #5dabcd, 1px 2px 1px #378ab4, 2px 1px 1px #5dabcd, 2px 3px 2px #378ab4, 3px 2px 2px #5dabcd, 3px 4px 2px #378ab4, 4px 3px 3px #5dabcd, 4px 5px 3px #378ab4, 5px 4px 2px #5dabcd, 5px 6px 2px #378ab4, 6px 5px 2px #5dabcd, 6px 7px 1px #378ab4, 7px 6px 1px #5dabcd, 7px 8px 0px #378ab4, 8px 7px 0px #5dabcd;
+    text-align: center;
+    height: 47px;
+}
