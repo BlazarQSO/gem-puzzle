@@ -18,6 +18,8 @@ window.addEventListener('load', () => {
         document.getElementById('time').innerHTML = '00:00';
         puzzle.steps = 0;
         puzzle.timestamp = 0;
+        main.style.opacity = 0.5;
+        puzzle.stopEvent();
         stop.innerHTML = 'Stop';
         stop.classList.remove('resume');
     });
@@ -54,6 +56,10 @@ window.addEventListener('load', () => {
     document.getElementById('save').addEventListener('click', () => {
         puzzle.saveGame();
     })
+
+    document.getElementById('results').addEventListener('click', () => {
+        puzzle.showResults('resultsMessage');
+    })
 })
 
 function createHtml() {
@@ -62,6 +68,10 @@ function createHtml() {
     h1.className = 'title';
     h1.innerHTML = 'Gem Puzzle';
     header.append(h1);
+    const resultsMessage = document.createElement('div');
+    resultsMessage.className = 'results-message';
+    resultsMessage.id = 'resultsMessage';
+    header.append(resultsMessage);
 
     const nav = document.createElement('nav');
     nav.className = 'nav';
@@ -438,6 +448,24 @@ class Puzzle {
                     game.append(item);
                 }
             }
+        }
+    }
+
+    showResults(id) {
+        document.getElementById(id).classList.toggle('show');
+        let message = localStorage.getItem('results') || '';
+        if (message) {
+            const getRes = message.split(',');
+            const newRes = [];
+            let index = 0;
+            const length = Math.floor(getRes.length / 3);
+            for (let i = 0; i < length; i += 1) {
+                newRes[i] = `<div>${i + 1}) steps: ${getRes[index]}, time: ${getRes[index + 1]}, cols: ${getRes[index + 2]}</div>`
+                index += 3;
+            }
+            document.getElementById(id).innerHTML = newRes.join('');
+        } else {
+            document.getElementById(id).innerHTML = message;
         }
     }
 }

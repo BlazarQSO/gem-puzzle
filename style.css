@@ -183,7 +183,7 @@ body {
     border-top: 2px solid crimson;
 }
 
-.message {
+.results-message, .message {
     display: none;
     width: 320px;
     padding: 50px;
@@ -194,10 +194,22 @@ body {
     text-align: center;
     font-size: 30px;
     top: 0;
-    z-index: 9999;
+    z-index: 99999;
     top: 50%;
     left: 50%;
     margin: -160px 0 0 -160px;
+    cursor: pointer;
+}
+
+.results-message {
+    padding: 0;
+    padding-top: 30px;
+    padding-bottom: 30px;
+    font-size: 22px;
+}
+
+.results-message div {
+    margin-top: 5px;
 }
 
 .show {
