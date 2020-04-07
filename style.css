@@ -53,6 +53,7 @@ body {
 .main {
     opacity: 0.5;
     transition: 0.2s;
+    position: relative;
 }
 
 .my-select, .item, .my-button {
@@ -180,4 +181,25 @@ body {
 .resume {
     border-bottom: 2px solid crimson;
     border-top: 2px solid crimson;
+}
+
+.message {
+    display: none;
+    width: 320px;
+    padding: 50px;
+    border: 2px solid goldenrod;
+    background-color: grey;
+    color: goldenrod;
+    position: absolute;
+    text-align: center;
+    font-size: 30px;
+    top: 0;
+    z-index: 9999;
+    top: 50%;
+    left: 50%;
+    margin: -160px 0 0 -160px;
+}
+
+.show {
+    display: block;
 }

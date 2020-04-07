@@ -1,4 +1,4 @@
-
+let clearTimeInterval;
 window.addEventListener('load', () => {
     createHtml();
     const puzzle = new Puzzle();
@@ -10,7 +10,6 @@ window.addEventListener('load', () => {
 
     const main = document.getElementById('main');
     const stop = document.getElementById('stop');
-    let clearTimeInterval;
 
     document.getElementById('select').addEventListener('change', () => {
         puzzle.cols = Number(document.getElementById('select').value[0]);
@@ -29,7 +28,7 @@ window.addEventListener('load', () => {
         document.getElementById('time').innerHTML = '00:00';
         puzzle.steps = 0;
         puzzle.timestamp = 0;
-        puzzle.createEvent(clearTimeInterval);
+        puzzle.createEvent();
         puzzle.create();
         stop.innerHTML = 'Stop';
         stop.classList.remove('resume');
@@ -47,7 +46,7 @@ window.addEventListener('load', () => {
         } else {
             stop.innerHTML = 'Stop';
             main.style.opacity = 1;
-            puzzle.createEvent(clearTimeInterval);
+            puzzle.createEvent();
             clearTimeInterval = puzzle.interval('time');
         }
     });
@@ -131,6 +130,10 @@ function createHtml() {
     game.id = 'game';
     wrap.append(game);
     main.append(wrap);
+    const message = document.createElement('p');
+    message.className = 'message';
+    message.id = 'message';
+    main.append(message);
 
     document.body.append(header);
     document.body.append(main);
@@ -185,8 +188,7 @@ class Puzzle {
         this.newDirection();
     }
 
-    createEvent(clearTimeInterval) {
-        this.clearTimeInterval = clearTimeInterval;
+    createEvent() {
         const game = document.getElementById(this.id);
         game.onclick = this.eventClick.bind(this);
 
@@ -237,10 +239,15 @@ class Puzzle {
             }
         }
         if (end) {
-            clearInterval(this.clearTimeInterval);
+            clearInterval(clearTimeInterval);
             const time = document.getElementById('time');
-            alert(`«Ура! Вы решили головоломку за ${time.innerHTML} и ${this.steps} ходов»`);
-            let getRes = localStorage.get('results') || false;
+            const message = document.getElementById('message');
+            message.innerHTML = `«Ура! Вы решили головоломку за ${time.innerHTML} и ${this.steps} ходов»`;
+            message.classList.add('show');
+            setTimeout(() => message.classList.remove('show'), 5000);
+            this.stopEvent();
+
+            let getRes = localStorage.getItem('results') || false;
             if (getRes) {
                 getRes = getRes.split(',');
                 const newRes = [];
@@ -250,14 +257,14 @@ class Puzzle {
                     newRes[i] = [+getRes[index], getRes[index + 1], getRes[index + 2]];
                     index += 3;
                 }
-                if (Number(newRes[length - 1][0]) < this.steps) {
+                if (Number(newRes[length - 1][0]) > this.steps || length < 10) {
                     newRes.push([this.steps, time.innerHTML, this.cols]);
                     newRes.sort((a, b) => a[0] - b[0]);
-                    if (getRes.length > 3) getRes.pop();
+                    if (newRes.length > 10) newRes.pop();
                 }
-                localStorage.setItem('results', getRes.join(','));
+                localStorage.setItem('results', newRes);
             } else {
-                localStorage.setItem('result', [this.steps, time.innerHTML, this.cols]);
+                localStorage.setItem('results', [this.steps, time.innerHTML, this.cols]);
             }
         }
     }
