@@ -1,7 +1,14 @@
 let clearTimeInterval;
 window.addEventListener('load', () => {
     createHtml();
+    let curWidth = window.innerWidth;
+    if (curWidth < 441) {
+        curWidth = 300;
+    } else {
+        curWidth = 400;
+    }
     const puzzle = new Puzzle();
+    puzzle.width = curWidth;
     if (localStorage.getItem('puzzle')) {
         puzzle.createSavedGame();
     } else {
@@ -60,6 +67,17 @@ window.addEventListener('load', () => {
     document.getElementById('results').addEventListener('click', () => {
         puzzle.showResults('resultsMessage');
     })
+
+    window.addEventListener('resize', () => {
+        const curWidth = window.innerWidth;
+        if (curWidth < 444) {
+            puzzle.width = 300;
+            puzzle.createSavedGame();
+        } else if (curWidth >= 441) {
+            puzzle.width = 400;
+            puzzle.createSavedGame();
+        }
+    });
 })
 
 function createHtml() {
@@ -158,15 +176,13 @@ class Puzzle {
         this.timestamp = +localStorage.getItem(timeId) || 0;
         this.field = localStorage.getItem('puzzle') || 0;
         this.fromStorage(timeId, stepsId, stopId);
-        this.timeId = timeId;
-        this.stepsId = stepsId;
-        this.stopId = stopId;
     }
 
     create() {
         this.field = new Array(this.cols).fill(false).map(elem => elem = new Array(this.cols).fill(false));
         let fontSize = '50px';
-        if (this.cols > 5) fontSize = '30px';
+        if (this.cols > 5) fontSize = '26px';
+        if (this.cols > 5 && this.width < 400) fontSize = '18px';
         const game = document.getElementById(this.id);
         game.innerHTML = '';
         const randomNumbers = [];
@@ -445,6 +461,8 @@ class Puzzle {
                     item.style.height = `${sizeItem}px`;
                     item.style.left = `${this.margin * j}px`;
                     item.style.top = `${this.margin * i}px`;
+                    this.field[i][j][2] = this.margin * j;
+                    this.field[i][j][3] = this.margin * i;
                     game.append(item);
                 }
             }
