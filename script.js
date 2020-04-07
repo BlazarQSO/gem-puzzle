@@ -500,18 +500,20 @@ class Puzzle {
             document.getElementById(stopId).innerHTML = 'Resume';
         }
 
-        const lineField = this.field.split(',');
-        this.cols = Math.round(Math.sqrt(lineField.length / 4));
-        this.field = new Array(this.cols).fill(false).map(elem => elem = new Array(this.cols).fill(false));
-        let n = 0;
-        for (let i = 0; i < this.cols; i += 1) {
-            for (let j = 0; j < this.cols; j += 1) {
-                const id = (lineField[n] === 'false') ? false : +lineField[n];
-                const direction = (lineField[n + 1] === 'false') ? false : lineField[n + 1];
-                const left = (lineField[n + 2] === 'false') ? false : +lineField[n + 2];
-                const top = (lineField[n + 3] === 'false') ? false : +lineField[n + 3];
-                this.field[i][j] = [id, direction, left, top];
-                n += 4;
+        if (this.field) {
+            const lineField = this.field.split(',');
+            this.cols = Math.round(Math.sqrt(lineField.length / 4));
+            this.field = new Array(this.cols).fill(false).map(elem => elem = new Array(this.cols).fill(false));
+            let n = 0;
+            for (let i = 0; i < this.cols; i += 1) {
+                for (let j = 0; j < this.cols; j += 1) {
+                    const id = (lineField[n] === 'false') ? false : +lineField[n];
+                    const direction = (lineField[n + 1] === 'false') ? false : lineField[n + 1];
+                    const left = (lineField[n + 2] === 'false') ? false : +lineField[n + 2];
+                    const top = (lineField[n + 3] === 'false') ? false : +lineField[n + 3];
+                    this.field[i][j] = [id, direction, left, top];
+                    n += 4;
+                }
             }
         }
     }
