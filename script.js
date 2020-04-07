@@ -84,10 +84,12 @@ function createHtml() {
 }
 
 class Puzzle {
-    constructor(cols = 4) {
+    constructor(cols = 4, id = 'game') {
+        this.id = id;
         this.cols = cols;
         this.count = cols * cols - 1;
         this.steps = 0;
+        this.createEvent(id);
     }
 
     create(size = 4, id = 'game', width = 400) {
@@ -110,22 +112,45 @@ class Puzzle {
                 } else {
                     const item = document.createElement('div');
                     item.className = 'item';
-                    const span = document.createElement('span');
+                    //const span = document.createElement('span');
                     const ranNum = this.randomNumber(randomNumbers)
                     randomNumbers.push(ranNum);
-                    span.innerHTML = ranNum;
-                    span.style.fontSize = fontSize;
+                    //span.innerHTML = ranNum;
+                    //span.style.fontSize = fontSize;
+                    //span.id = ranNum;
+                    item.innerHTML = ranNum;
+                    item.style.fontSize = fontSize;
                     item.id = ranNum;
                     item.style.width = `${sizeItem}px`;
                     item.style.height = `${sizeItem}px`;
                     item.style.left = `${this.margin * j}px`;
                     item.style.top = `${this.margin * i}px`;
-                    item.append(span);
+                    //item.append(span);
                     game.append(item);
-                    this.field[i][j] = [ranNum, false];
+                    this.field[i][j] = [ranNum, false, this.margin * j, this.margin * i];
                 }
             }
         }
+        this.newDirection();
+    }
+
+    createEvent() {
+        const game = document.getElementById(this.id);
+        game.onclick = this.eventClick.bind(this);
+
+        game.onmousedown = (e) => {
+            game.onmousemove = () => {
+                game.onclick = null;
+                //this.eventMouseMove(e.target.id);
+            }
+        };
+        game.onmouseup = (e) => {
+            game.onmousemove = null;
+            //this.eventUp(e.target.id);
+            setTimeout(() => {
+                game.onclick = this.eventClick.bind(this);
+            }, 0);
+        };
     }
 
     randomNumber(randomNumbers) {
@@ -177,12 +202,154 @@ class Puzzle {
         for (let i = 0; i < this.cols; i += 1) {
             for (let j = 0; j < this.cols; j += 1) {
                 if (this.field[i][j] === false) {
-                    if (i - 1 > 0) this.field[i - 1][j][1] = 'right';
-                    if (i + 1 < this.cols) this.field[i + 1][j][1] = 'left';
-                    if (j - 1 > 0) this.field[i][j - 1][1] = 'up';
-                    if (j + 1 < 0) this.field[i][j + 1][1] = 'down';
+                    if (i - 1 >= 0) this.field[i - 1][j][1] = 'down';
+                    if (i + 1 < this.cols) this.field[i + 1][j][1] = 'up';
+                    if (j - 1 >= 0) this.field[i][j - 1][1] = 'right';
+                    if (j + 1 < this.cols) this.field[i][j + 1][1] = 'left';
                 }
             }
         }
+    }
+
+    eventClick(e) {
+        const itemId = e.target.id;
+        if (e.target.closest('div').className === 'item' && itemId !== this.id) {
+            document.getElementById(this.id).onclick = null;
+            document.getElementById(this.id).onmousedown = null;
+            document.getElementById(this.id).onmousemove = null;
+            document.getElementById(this.id).onmouseup = null;
+            const item = document.getElementById(itemId);
+            let button = [0, 0];
+            const cords = [0, 0];
+            for (let i = 0; i < this.cols; i += 1) {
+                for (let j = 0; j < this.cols; j += 1) {
+                    if (this.field[i][j][0] === Number(itemId)) {
+                        button = this.field[i][j];
+                        cords[0] = i;
+                        cords[1] = j;
+                    }
+                }
+            }
+            if (button[1]) {
+                switch (button[1]) {
+                    case 'left':
+                        this.moveLeft(item, button, cords);
+                        break;
+                    case 'right':
+                        this.moveRight(item, button, cords);
+                        break;
+                    case 'up':
+                        this.moveUp(item, button, cords);
+                        break;
+                    case 'down':
+                        this.moveDown(item, button, cords);
+                        break;
+                }
+            }
+        }
+    }
+
+    moveDown(item, button, cords) {
+        this.createEvent();
+        item.style.top = `${button[3] + this.margin}px`;
+        this.field[cords[0]][cords[1]][3] += this.margin;
+        this.field[cords[0] + 1][cords[1]] = this.field[cords[0]][cords[1]];
+        this.field[cords[0]][cords[1]] = false;
+        this.blockElements();
+        this.newDirection();
+
+        // let interval = setInterval(() => {
+        //     top += 1;
+        //     item.style.top = `${top}px`;
+        //     if (this.margin + button[3] < top) {
+        //         clearInterval(interval);
+        //         this.field[cords[0]][cords[1]][3] += this.margin;
+        //         this.field[cords[0] + 1][cords[1]] = this.field[cords[0]][cords[1]];
+        //         this.field[cords[0]][cords[1]] = false;
+        //         this.blockElements();
+        //         this.newDirection();
+        //         this.createEvent();
+        //     }
+        // }, 6);
+    }
+
+    moveRight(item, button, cords) {
+        this.createEvent();
+        item.style.left = `${button[2] + this.margin}px`;
+        this.field[cords[0]][cords[1]][2] += this.margin;
+        this.field[cords[0]][cords[1] + 1] = this.field[cords[0]][cords[1]];
+        this.field[cords[0]][cords[1]] = false;
+        this.blockElements();
+        this.newDirection();
+
+
+
+        // let right = button[2];
+        // let interval = setInterval(() => {
+        //     right += 1;
+        //     item.style.left = `${right}px`;
+        //     if (this.margin + button[2] < right) {
+        //         clearInterval(interval);
+        //         this.field[cords[0]][cords[1]][2] += this.margin;
+        //         this.field[cords[0]][cords[1] + 1] = this.field[cords[0]][cords[1]];
+        //         this.field[cords[0]][cords[1]] = false;
+        //         this.blockElements();
+        //         this.newDirection();
+        //         this.createEvent();
+        //     }
+        // }, 4);
+    }
+
+    moveUp(item, button, cords) {
+        this.createEvent();
+        item.style.top = `${button[3] - this.margin}px`;
+        this.field[cords[0]][cords[1]][3] -= this.margin;
+        this.field[cords[0] - 1][cords[1]] = this.field[cords[0]][cords[1]];
+        this.field[cords[0]][cords[1]] = false;
+        this.blockElements();
+        this.newDirection();
+
+
+
+        // let up = button[3];
+        // let interval = setInterval(() => {
+        //     up -= 1;
+        //     item.style.top = `${up}px`;
+        //     if (button[3] - this.margin > up) {
+        //         clearInterval(interval);
+        //         this.field[cords[0]][cords[1]][3] -= this.margin;
+        //         this.field[cords[0] - 1][cords[1]] = this.field[cords[0]][cords[1]];
+        //         this.field[cords[0]][cords[1]] = false;
+        //         this.blockElements();
+        //         this.newDirection();
+        //         this.createEvent();
+        //     }
+        // }, 4);
+    }
+
+    moveLeft(item, button, cords) {
+        this.createEvent();
+        item.style.left = `${button[2] - this.margin}px`;
+        this.field[cords[0]][cords[1]][2] -= this.margin;
+        this.field[cords[0]][cords[1] - 1] = this.field[cords[0]][cords[1]];
+        this.field[cords[0]][cords[1]] = false;
+        this.blockElements();
+        this.newDirection();
+
+
+        // let left = button[2];
+        // let interval = setInterval(() => {
+        //     left -= 1;
+        //     item.style.left = `${left}px`;
+        //     if (button[2] - this.margin > left) {
+        //         clearInterval(interval);
+        //         this.field[cords[0]][cords[1]][2] += this.margin;
+        //         this.field[cords[0]][cords[1] - 1] = this.field[cords[0]][cords[1]];
+        //         this.field[cords[0]][cords[1]] = false;
+        //         this.blockElements();
+        //         this.newDirection();
+        //         this.createEvent();
+        //     }
+        // }, 4);
     }
 }
