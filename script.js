@@ -2,13 +2,25 @@
 window.addEventListener('load', () => {
     createHtml();
     const puzzle = new Puzzle();
-    puzzle.create();
+    if (localStorage.getItem('puzzle')) {
+        puzzle.createSavedGame();
+    } else {
+        puzzle.create();
+    }
+
     const main = document.getElementById('main');
     const stop = document.getElementById('stop');
     let clearTimeInterval;
 
     document.getElementById('select').addEventListener('change', () => {
-        puzzle.create(Number(document.getElementById('select').value[0]));
+        puzzle.cols = Number(document.getElementById('select').value[0]);
+        puzzle.create();
+        document.getElementById('steps').innerHTML = 0;
+        document.getElementById('time').innerHTML = '00:00';
+        puzzle.steps = 0;
+        puzzle.timestamp = 0;
+        stop.innerHTML = 'Stop';
+        stop.classList.remove('resume');
     });
 
     document.getElementById('start').addEventListener('click', () => {
@@ -19,6 +31,9 @@ window.addEventListener('load', () => {
         puzzle.timestamp = 0;
         puzzle.createEvent();
         puzzle.create();
+        stop.innerHTML = 'Stop';
+        stop.classList.remove('resume');
+        if (clearTimeInterval) clearInterval(clearTimeInterval);
         clearTimeInterval = puzzle.interval('time');
     });
 
@@ -74,10 +89,11 @@ function createHtml() {
     const select = document.createElement('select');
     select.className = 'my-select';
     select.id = 'select';
+    const selectOption = +localStorage.getItem('select') || 4;
     for (let i = 3; i <= 8; i += 1) {
         const option = document.createElement('option');
         option.innerHTML = `${i}x${i}`;
-        if (i === 4) option.selected = true;
+        if (i === selectOption) option.selected = true;
         select.append(option);
     }
     nav.append(select);
@@ -121,32 +137,31 @@ function createHtml() {
 }
 
 class Puzzle {
-    constructor(cols = 4, id = 'game', timeId = 'time', stepsId = 'steps', stopId = 'stop') {
+    constructor(cols = 4, id = 'game', width = 400, timeId = 'time', stepsId = 'steps', stopId = 'stop') {
         this.id = id;
         this.cols = cols;
-        this.count = cols * cols - 1;
+        this.width = width;
         this.steps = +localStorage.getItem(stepsId) || 0;
         this.timestamp = +localStorage.getItem(timeId) || 0;
+        this.field = localStorage.getItem('puzzle') || 0;
         this.fromStorage(timeId, stepsId, stopId);
     }
 
-    create(size = 4, width = 400) {
-        this.field = new Array(size).fill(false).map(elem => elem = new Array(size).fill(false));
-        this.cols = size;
-        this.count = size * size - 1;
+    create() {
+        this.field = new Array(this.cols).fill(false).map(elem => elem = new Array(this.cols).fill(false));
         let fontSize = '50px';
-        if (size > 5) fontSize = '30px';
+        if (this.cols > 5) fontSize = '30px';
         const game = document.getElementById(this.id);
         game.innerHTML = '';
         const randomNumbers = [];
-        const sizeItem = (width - (this.cols + 1) * 10) / this.cols;
+        const sizeItem = (this.width - (this.cols + 1) * 10) / this.cols;
         this.margin = sizeItem + 10;
         game.style.height = `${this.margin * this.cols}px`;
 
         for (let i = 0; i < this.cols; i += 1) {
             for (let j = 0; j < this.cols; j += 1) {
                 if (i === this.cols - 1 && j === this.cols - 1) {
-                    this.field[i][j] = false;
+                    this.field[i][j] = [false, false, false, false];
                 } else {
                     const item = document.createElement('div');
                     item.className = 'item';
@@ -196,12 +211,12 @@ class Puzzle {
 
     randomNumber(randomNumbers) {
         if (randomNumbers.length === 0) {
-            return 1 + Math.floor(Math.random() * (this.count));
+            return 1 + Math.floor(Math.random() * (this.cols * this.cols - 1));
         }
 
         let ranRes = randomNumbers[0];
         while (randomNumbers.includes(ranRes)) {
-            ranRes = 1 + Math.floor(Math.random() * (this.count));
+            ranRes = 1 + Math.floor(Math.random() * (this.cols * this.cols - 1));
         }
         return ranRes;
     }
@@ -212,7 +227,7 @@ class Puzzle {
         for (let i = 0; i < this.cols; i += 1) {
             for (let j = 0; j < this.cols; j += 1) {
                 count += 1;
-                if (count !== this.field[i][j] && count !== this.count + 1) {
+                if (count !== this.field[i][j] && count !== this.cols * this.cols) {
                     end = false;
                 }
             }
@@ -232,9 +247,7 @@ class Puzzle {
     blockElements() {
         for (let i = 0; i < this.cols; i += 1) {
             for (let j = 0; j < this.cols; j += 1) {
-                if (this.field[i][j]) {
-                    this.field[i][j][1] = false;
-                }
+                this.field[i][j][1] = false;
             }
         }
     }
@@ -242,7 +255,7 @@ class Puzzle {
     newDirection() {
         for (let i = 0; i < this.cols; i += 1) {
             for (let j = 0; j < this.cols; j += 1) {
-                if (this.field[i][j] === false) {
+                if (this.field[i][j][0] === false) {
                     if (i - 1 >= 0) this.field[i - 1][j][1] = 'down';
                     if (i + 1 < this.cols) this.field[i + 1][j][1] = 'up';
                     if (j - 1 >= 0) this.field[i][j - 1][1] = 'right';
@@ -295,7 +308,7 @@ class Puzzle {
         item.style.top = `${button[3] + this.margin}px`;
         this.field[cords[0]][cords[1]][3] += this.margin;
         this.field[cords[0] + 1][cords[1]] = this.field[cords[0]][cords[1]];
-        this.field[cords[0]][cords[1]] = false;
+        this.field[cords[0]][cords[1]] = [false, false, false, false];
         this.blockElements();
         this.newDirection();
     }
@@ -304,7 +317,7 @@ class Puzzle {
         item.style.left = `${button[2] + this.margin}px`;
         this.field[cords[0]][cords[1]][2] += this.margin;
         this.field[cords[0]][cords[1] + 1] = this.field[cords[0]][cords[1]];
-        this.field[cords[0]][cords[1]] = false;
+        this.field[cords[0]][cords[1]] = [false, false, false, false];
         this.blockElements();
         this.newDirection();
     }
@@ -313,7 +326,7 @@ class Puzzle {
         item.style.top = `${button[3] - this.margin}px`;
         this.field[cords[0]][cords[1]][3] -= this.margin;
         this.field[cords[0] - 1][cords[1]] = this.field[cords[0]][cords[1]];
-        this.field[cords[0]][cords[1]] = false;
+        this.field[cords[0]][cords[1]] = [false, false, false, false];
         this.blockElements();
         this.newDirection();
     }
@@ -322,7 +335,7 @@ class Puzzle {
         item.style.left = `${button[2] - this.margin}px`;
         this.field[cords[0]][cords[1]][2] -= this.margin;
         this.field[cords[0]][cords[1] - 1] = this.field[cords[0]][cords[1]];
-        this.field[cords[0]][cords[1]] = false;
+        this.field[cords[0]][cords[1]] = [false, false, false, false];
         this.blockElements();
         this.newDirection();
     }
@@ -330,6 +343,8 @@ class Puzzle {
     saveGame() {
         localStorage.setItem('steps', this.steps);
         localStorage.setItem('time', this.timestamp);
+        localStorage.setItem('puzzle', this.field);
+        localStorage.setItem('select', this.cols);
     }
 
     interval(id) {
@@ -354,6 +369,49 @@ class Puzzle {
         if (this.steps !== 0 || this.timestamp !== 0) {
             document.getElementById(stopId).classList.add('resume');
             document.getElementById(stopId).innerHTML = 'Resume';
+        }
+
+        const lineField = this.field.split(',');
+        this.cols = Math.round(Math.sqrt(lineField.length / 4));
+        this.field = new Array(this.cols).fill(false).map(elem => elem = new Array(this.cols).fill(false));
+        let n = 0;
+        for (let i = 0; i < this.cols; i += 1) {
+            for (let j = 0; j < this.cols; j += 1){
+                const id = (lineField[n] === 'false') ? false : +lineField[n];
+                const direction = (lineField[n + 1] === 'false') ? false : lineField[n + 1];
+                const left = (lineField[n + 2] === 'false') ? false : +lineField[n + 2];
+                const top = (lineField[n + 3] === 'false') ? false : +lineField[n + 3];
+                this.field[i][j] = [id, direction, left, top];
+                n += 4;
+            }
+        }
+    }
+
+    createSavedGame() {
+        let fontSize = '50px';
+        if (this.cols > 5) fontSize = '30px';
+        const game = document.getElementById(this.id);
+        game.innerHTML = '';
+        const sizeItem = (this.width - (this.cols + 1) * 10) / this.cols;
+        this.margin = sizeItem + 10;
+        game.style.height = `${this.margin * this.cols}px`;
+
+        for (let i = 0; i < this.cols; i += 1) {
+            for (let j = 0; j < this.cols; j += 1) {
+                if (this.field[i][j][0] !== false) {
+                    const item = document.createElement('div');
+                    item.className = 'item';
+                    const id = this.field[i][j][0];
+                    item.innerHTML = id;
+                    item.style.fontSize = fontSize;
+                    item.id = id;
+                    item.style.width = `${sizeItem}px`;
+                    item.style.height = `${sizeItem}px`;
+                    item.style.left = `${this.margin * j}px`;
+                    item.style.top = `${this.margin * i}px`;
+                    game.append(item);
+                }
+            }
         }
     }
 }
