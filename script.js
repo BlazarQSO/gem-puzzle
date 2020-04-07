@@ -19,45 +19,15 @@ window.addEventListener('load', () => {
     const stop = document.getElementById('stop');
 
     document.getElementById('select').addEventListener('change', () => {
-        puzzle.cols = Number(document.getElementById('select').value[0]);
-        puzzle.create();
-        document.getElementById('steps').innerHTML = 0;
-        document.getElementById('time').innerHTML = '00:00';
-        puzzle.steps = 0;
-        puzzle.timestamp = 0;
-        main.style.opacity = 0.5;
-        puzzle.stopEvent();
-        stop.innerHTML = 'Stop';
-        stop.classList.remove('resume');
+        selectEvent(puzzle, stop, main);
     });
 
     document.getElementById('start').addEventListener('click', () => {
-        main.style.opacity = 1;
-        document.getElementById('steps').innerHTML = 0;
-        document.getElementById('time').innerHTML = '00:00';
-        puzzle.steps = 0;
-        puzzle.timestamp = 0;
-        puzzle.createEvent();
-        puzzle.create();
-        stop.innerHTML = 'Stop';
-        stop.classList.remove('resume');
-        if (clearTimeInterval) clearInterval(clearTimeInterval);
-        clearTimeInterval = puzzle.interval('time');
+        startEvent(puzzle, stop, main);
     });
 
     stop.addEventListener('click', () => {
-        main.style.opacity = 0.5;
-        puzzle.stopEvent();
-        stop.classList.toggle('resume');
-        if (stop.classList.length > 1) {
-            stop.innerHTML = 'Resume';
-            clearInterval(clearTimeInterval);
-        } else {
-            stop.innerHTML = 'Stop';
-            main.style.opacity = 1;
-            puzzle.createEvent();
-            clearTimeInterval = puzzle.interval('time');
-        }
+        stopEvent(puzzle, stop, main);
     });
 
     document.getElementById('save').addEventListener('click', () => {
@@ -69,16 +39,63 @@ window.addEventListener('load', () => {
     })
 
     window.addEventListener('resize', () => {
-        const curWidth = window.innerWidth;
-        if (curWidth < 444) {
-            puzzle.width = 300;
-            puzzle.createSavedGame();
-        } else if (curWidth >= 441) {
-            puzzle.width = 400;
-            puzzle.createSavedGame();
-        }
+        resizeEvent(puzzle);
     });
 })
+
+function resizeEvent(puzzle) {
+    const curWidth = window.innerWidth;
+    if (curWidth < 444) {
+        puzzle.width = 300;
+        puzzle.createSavedGame();
+    } else if (curWidth >= 441) {
+        puzzle.width = 400;
+        puzzle.createSavedGame();
+    }
+}
+
+function selectEvent(puzzle, stop, main) {
+    puzzle.cols = Number(document.getElementById('select').value[0]);
+    puzzle.create();
+    document.getElementById('steps').innerHTML = 0;
+    document.getElementById('time').innerHTML = '00:00';
+    puzzle.steps = 0;
+    puzzle.timestamp = 0;
+    main.style.opacity = 0.5;
+    puzzle.stopEvent();
+    stop.innerHTML = 'Stop';
+    stop.classList.remove('resume');
+    if (clearTimeInterval) clearInterval(clearTimeInterval);
+}
+
+function startEvent(puzzle, stop, main) {
+    main.style.opacity = 1;
+    document.getElementById('steps').innerHTML = 0;
+    document.getElementById('time').innerHTML = '00:00';
+    puzzle.steps = 0;
+    puzzle.timestamp = 0;
+    puzzle.createEvent();
+    puzzle.create();
+    stop.innerHTML = 'Stop';
+    stop.classList.remove('resume');
+    if (clearTimeInterval) clearInterval(clearTimeInterval);
+    clearTimeInterval = puzzle.interval('time');
+}
+
+function stopEvent(puzzle, stop, main) {
+    main.style.opacity = 0.5;
+    puzzle.stopEvent();
+    stop.classList.toggle('resume');
+    if (stop.classList.length > 1) {
+        stop.innerHTML = 'Resume';
+        clearInterval(clearTimeInterval);
+    } else {
+        stop.innerHTML = 'Stop';
+        main.style.opacity = 1;
+        puzzle.createEvent();
+        clearTimeInterval = puzzle.interval('time');
+    }
+}
 
 function createHtml() {
     const header = document.createElement('header');
@@ -219,19 +236,79 @@ class Puzzle {
         game.onclick = this.eventClick.bind(this);
 
         game.onmousedown = (e) => {
-            game.onmousemove = () => {
-                game.onclick = null;
-                //this.eventMouseMove(e.target.id);
+            if (e.target.closest('div').className === 'item' && e.target.id !== this.id) {
+                const item = document.getElementById(e.target.id);
+                item.style.transition = '0s';
+                this.moveItem(item, e);
             }
-        };
-        game.onmouseup = (e) => {
-            game.onmousemove = null;
-            //this.eventUp(e.target.id);
-            setTimeout(() => {
-                game.onclick = this.eventClick.bind(this);
-            }, 0);
+
+            game.onmouseup = () => {
+                game.onmousemove = null;
+                setTimeout(() => {
+                    game.onclick = this.eventClick.bind(this);
+                }, 0);
+            };
         };
     }
+
+    moveItem(elem, e) {
+        let startX = e.clientX;
+        let startY = e.clientY;
+        let elemX = elem.offsetLeft;
+        let elemY = elem.offsetTop;
+        const deltaX = startX - elemX;
+        const deltaY = startY - elemY;
+
+        document.onmousemove = moveHandler.bind(this);
+        document.onmouseup = upHandler.bind(this);
+
+        let button = [0, 0];
+        for (let i = 0; i < this.cols; i += 1) {
+            for (let j = 0; j < this.cols; j += 1) {
+                if (this.field[i][j][0] === Number(e.target.id)) {
+                    button = this.field[i][j];
+                }
+            }
+        }
+
+        function moveHandler(e) {
+            if (button[1]) {
+                const moveX = e.clientX - deltaX;
+                const moveY = e.clientY - deltaY;
+                switch (button[1]) {
+                    case 'left':
+                        if (moveX < button[2] && moveX > button[2] - this.margin) {
+                            elem.style.left = `${moveX}px`;
+                        }
+                        break;
+                    case 'right':
+                        if (moveX > button[2] && moveX < button[2] + this.margin) {
+                            elem.style.left = `${moveX}px`;
+                        }
+                        break;
+                    case 'up':
+                        if (moveY < button[3] && moveY > button[3] - this.margin) {
+                            elem.style.top = `${moveY}px`;
+                        }
+                        break;
+                    case 'down':
+                        if (moveY > button[3] && moveY < button[3] + this.margin) {
+                            elem.style.top = `${moveY}px`;
+                        }
+                        break;
+                }
+            }
+        }
+
+        function upHandler() {
+            document.onmousemove = null;
+            document.onmouseup = null;
+            elem.style.transition = 'all 0.2s linear';
+            elem.style.left = `${button[2]}px`;
+            elem.style.top = `${button[3]}px`;
+        }
+    }
+
 
     stopEvent() {
         const game = document.getElementById(this.id);
@@ -410,8 +487,8 @@ class Puzzle {
     parseTime(time) {
         let minutes = Math.floor(this.timestamp / 60);
         let seconds = this.timestamp % 60;
-        if (seconds < 10) seconds = '0' + seconds;
-        if (minutes < 10) minutes = '0' + minutes;
+        if (seconds < 10) seconds = `0${seconds}`;
+        if (minutes < 10) minutes = `0${minutes}`;
         time.innerHTML = `${minutes}:${seconds}`;
     }
 
@@ -428,7 +505,7 @@ class Puzzle {
         this.field = new Array(this.cols).fill(false).map(elem => elem = new Array(this.cols).fill(false));
         let n = 0;
         for (let i = 0; i < this.cols; i += 1) {
-            for (let j = 0; j < this.cols; j += 1){
+            for (let j = 0; j < this.cols; j += 1) {
                 const id = (lineField[n] === 'false') ? false : +lineField[n];
                 const direction = (lineField[n + 1] === 'false') ? false : lineField[n + 1];
                 const left = (lineField[n + 2] === 'false') ? false : +lineField[n + 2];
@@ -471,7 +548,7 @@ class Puzzle {
 
     showResults(id) {
         document.getElementById(id).classList.toggle('show');
-        let message = localStorage.getItem('results') || '';
+        const message = localStorage.getItem('results') || '';
         if (message) {
             const getRes = message.split(',');
             const newRes = [];
