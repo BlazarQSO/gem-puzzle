@@ -29,7 +29,7 @@ window.addEventListener('load', () => {
         document.getElementById('time').innerHTML = '00:00';
         puzzle.steps = 0;
         puzzle.timestamp = 0;
-        puzzle.createEvent();
+        puzzle.createEvent(clearTimeInterval);
         puzzle.create();
         stop.innerHTML = 'Stop';
         stop.classList.remove('resume');
@@ -47,7 +47,7 @@ window.addEventListener('load', () => {
         } else {
             stop.innerHTML = 'Stop';
             main.style.opacity = 1;
-            puzzle.createEvent();
+            puzzle.createEvent(clearTimeInterval);
             clearTimeInterval = puzzle.interval('time');
         }
     });
@@ -145,6 +145,9 @@ class Puzzle {
         this.timestamp = +localStorage.getItem(timeId) || 0;
         this.field = localStorage.getItem('puzzle') || 0;
         this.fromStorage(timeId, stepsId, stopId);
+        this.timeId = timeId;
+        this.stepsId = stepsId;
+        this.stopId = stopId;
     }
 
     create() {
@@ -182,7 +185,8 @@ class Puzzle {
         this.newDirection();
     }
 
-    createEvent() {
+    createEvent(clearTimeInterval) {
+        this.clearTimeInterval = clearTimeInterval;
         const game = document.getElementById(this.id);
         game.onclick = this.eventClick.bind(this);
 
@@ -227,20 +231,34 @@ class Puzzle {
         for (let i = 0; i < this.cols; i += 1) {
             for (let j = 0; j < this.cols; j += 1) {
                 count += 1;
-                if (count !== this.field[i][j] && count !== this.cols * this.cols) {
+                if (count !== this.field[i][j][0] && count !== this.cols * this.cols) {
                     end = false;
                 }
             }
         }
         if (end) {
-            this.showMessage = 'show message with the end game';
-            const getRes = localStorage.get('results').split(',');
-            if (Number(getRes[getRes.length - 1]) < this.steps) {
-                getRes.push(getRes);
-                getRes.sort();
-                if (getRes.length > 10) getRes.pop();
+            clearInterval(this.clearTimeInterval);
+            const time = document.getElementById('time');
+            alert(`«Ура! Вы решили головоломку за ${time.innerHTML} и ${this.steps} ходов»`);
+            let getRes = localStorage.get('results') || false;
+            if (getRes) {
+                getRes = getRes.split(',');
+                const newRes = [];
+                let index = 0;
+                const length = Math.floor(getRes.length / 3);
+                for (let i = 0; i < length; i += 1) {
+                    newRes[i] = [+getRes[index], getRes[index + 1], getRes[index + 2]];
+                    index += 3;
+                }
+                if (Number(newRes[length - 1][0]) < this.steps) {
+                    newRes.push([this.steps, time.innerHTML, this.cols]);
+                    newRes.sort((a, b) => a[0] - b[0]);
+                    if (getRes.length > 3) getRes.pop();
+                }
+                localStorage.setItem('results', getRes.join(','));
+            } else {
+                localStorage.setItem('result', [this.steps, time.innerHTML, this.cols]);
             }
-            localStorage.setItem('results', getRes.join(','));
         }
     }
 
@@ -302,6 +320,7 @@ class Puzzle {
                 }
             }
         }
+        this.endGame();
     }
 
     moveDown(item, button, cords) {
