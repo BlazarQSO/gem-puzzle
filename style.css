@@ -50,6 +50,11 @@ body {
     margin-bottom: 10px;
 }
 
+.main {
+    opacity: 0.5;
+    transition: 0.2s;
+}
+
 .my-select, .item, .my-button {
     color: black;
     text-shadow: 1px 1px 1px white;
@@ -115,6 +120,10 @@ body {
 
 /*-------------DropDownMenu----------------*/
 
+.my-select {
+    padding-left: 21px;
+}
+
 .my-select:hover {
     color: black;
     background: #c8c4c4;
@@ -154,6 +163,7 @@ body {
     height: 30px;
     margin-left: 30px;
     margin-right: 30px;
+    width: 30px;
 }
 
 /*---------------------myTitleComic---------------------*/
@@ -165,4 +175,9 @@ body {
     text-shadow: 0 1px 0px #378ab4, 1px 0 0px #5dabcd, 1px 2px 1px #378ab4, 2px 1px 1px #5dabcd, 2px 3px 2px #378ab4, 3px 2px 2px #5dabcd, 3px 4px 2px #378ab4, 4px 3px 3px #5dabcd, 4px 5px 3px #378ab4, 5px 4px 2px #5dabcd, 5px 6px 2px #378ab4, 6px 5px 2px #5dabcd, 6px 7px 1px #378ab4, 7px 6px 1px #5dabcd, 7px 8px 0px #378ab4, 8px 7px 0px #5dabcd;
     text-align: center;
     height: 47px;
+}
+
+.resume {
+    border-bottom: 2px solid crimson;
+    border-top: 2px solid crimson;
 }
